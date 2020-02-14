@@ -1,0 +1,174 @@
+definitions:
+  http_device.deviceRegisterRequestDTO:
+    properties:
+      firmware_version:
+        example: 1.0.0-1
+        type: string
+      serial_number:
+        example: TEST-123
+        type: string
+    type: object
+  http_device.deviceRegisterResponseDTO:
+    properties:
+      device:
+        $ref: '#/definitions/registry.Device'
+        type: object
+      token:
+        type: string
+    type: object
+  ingestion.DecimalMetricValue:
+    properties:
+      time:
+        description: Epoch timestamp in seconds
+        example: 1578859629
+        type: integer
+      value:
+        type: number
+    type: object
+  registry.Device:
+    properties:
+      firmware_version:
+        example: 1.0.0-1
+        type: string
+      id:
+        type: integer
+      registration_date:
+        example: "2017-07-21T17:32:28Z"
+        format: date-time
+        type: string
+      serial_number:
+        example: TEST-123
+        type: string
+    type: object
+info:
+  contact:
+    email: yigitcan.ucum@trendyol.com
+    name: Yengas
+  description: Devices and Metrics API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: IOT Demo
+  version: "1.0"
+paths:
+  /_monitoring/health:
+    get:
+      consumes:
+      - application/json
+      description: returns ok if the server is up
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: get status of the server
+      tags:
+      - health
+  /device:
+    post:
+      consumes:
+      - application/json
+      description: register a new device with the given parameters
+      parameters:
+      - description: info of the device to register
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/http_device.deviceRegisterRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created new device
+          schema:
+            $ref: '#/definitions/http_device.deviceRegisterResponseDTO'
+        "400":
+          description: invalid request parameters
+          schema:
+            type: string
+        "500":
+          description: unexpected error occurred
+          schema:
+            type: string
+      summary: register a new device
+      tags:
+      - device
+  /metric/temperature:
+    get:
+      consumes:
+      - application/json
+      description: given a device and a starting date, returns all temperature metrics
+      parameters:
+      - description: id of the device
+        in: query
+        name: deviceID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: metrics matching the criteria
+          schema:
+            items:
+              $ref: '#/definitions/ingestion.DecimalMetricValue'
+            type: array
+        "404":
+          description: no metrics found
+          schema:
+            type: string
+        "500":
+          description: unexpected error occurred
+          schema:
+            type: string
+      summary: query temperature metrics of devices
+      tags:
+      - metric
+    post:
+      consumes:
+      - application/json
+      description: inserts temperature metric data for the given device id
+      parameters:
+      - description: metrics to insert
+        in: body
+        name: metrics
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/ingestion.DecimalMetricValue'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: inserted the temperature metrics
+          schema:
+            type: string
+        "400":
+          description: invalid request parameters
+          schema:
+            type: string
+        "401":
+          description: no device token supplied
+          schema:
+            type: string
+        "500":
+          description: unexpected error occurred
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: insert temperature metric data for devices
+      tags:
+      - metric
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

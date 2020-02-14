@@ -1,13 +1,13 @@
 package memory
 
 import (
-	"iot-demo/pkg/registry"
+	"iot-demo/pkg/device/registry"
 	"time"
 )
 
 // Registry is non threadsafe repository implementation for registry package
 type Registry struct {
-	id int
+	id      int
 	devices map[int]*registry.Device
 }
 

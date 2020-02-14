@@ -1,7 +1,7 @@
 package query_metrics
 
 import (
-	"iot-demo/pkg/ingestion"
+	"iot-demo/pkg/metrics/ingestion"
 )
 
 type Querier interface {
@@ -19,4 +19,3 @@ func (s *Service) Query(deviceID int) ([]*ingestion.DecimalMetricValue, error) {
 func NewService(querier Querier) *Service {
 	return &Service{querier: querier}
 }
-

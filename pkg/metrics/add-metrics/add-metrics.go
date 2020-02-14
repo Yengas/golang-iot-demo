@@ -1,7 +1,7 @@
 package add_metrics
 
 import (
-	"iot-demo/pkg/ingestion"
+	"iot-demo/pkg/metrics/ingestion"
 )
 
 type Inserter interface {
@@ -19,4 +19,3 @@ func (s *Service) Add(deviceID int, metricsToInsert []*ingestion.DecimalMetricVa
 func NewService(inserter Inserter) *Service {
 	return &Service{inserter: inserter}
 }
-

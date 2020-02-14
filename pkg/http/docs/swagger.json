@@ -1,0 +1,263 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Devices and Metrics API",
+        "title": "IOT Demo",
+        "contact": {
+            "name": "Yengas",
+            "email": "yigitcan.ucum@trendyol.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/_monitoring/health": {
+            "get": {
+                "description": "returns ok if the server is up",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "get status of the server",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/device": {
+            "post": {
+                "description": "register a new device with the given parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "device"
+                ],
+                "summary": "register a new device",
+                "parameters": [
+                    {
+                        "description": "info of the device to register",
+                        "name": "device",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http_device.deviceRegisterRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "created new device",
+                        "schema": {
+                            "$ref": "#/definitions/http_device.deviceRegisterResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected error occurred",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/metric/temperature": {
+            "get": {
+                "description": "given a device and a starting date, returns all temperature metrics",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "metric"
+                ],
+                "summary": "query temperature metrics of devices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of the device",
+                        "name": "deviceID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "metrics matching the criteria",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ingestion.DecimalMetricValue"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "no metrics found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected error occurred",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "inserts temperature metric data for the given device id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "metric"
+                ],
+                "summary": "insert temperature metric data for devices",
+                "parameters": [
+                    {
+                        "description": "metrics to insert",
+                        "name": "metrics",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ingestion.DecimalMetricValue"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "inserted the temperature metrics",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "no device token supplied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected error occurred",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "http_device.deviceRegisterRequestDTO": {
+            "type": "object",
+            "properties": {
+                "firmware_version": {
+                    "type": "string",
+                    "example": "1.0.0-1"
+                },
+                "serial_number": {
+                    "type": "string",
+                    "example": "TEST-123"
+                }
+            }
+        },
+        "http_device.deviceRegisterResponseDTO": {
+            "type": "object",
+            "properties": {
+                "device": {
+                    "type": "object",
+                    "$ref": "#/definitions/registry.Device"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "ingestion.DecimalMetricValue": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "description": "Epoch timestamp in seconds",
+                    "type": "integer",
+                    "example": 1578859629
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "registry.Device": {
+            "type": "object",
+            "properties": {
+                "firmware_version": {
+                    "type": "string",
+                    "example": "1.0.0-1"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "registration_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2017-07-21T17:32:28Z"
+                },
+                "serial_number": {
+                    "type": "string",
+                    "example": "TEST-123"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

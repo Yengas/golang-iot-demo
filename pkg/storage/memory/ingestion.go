@@ -1,8 +1,7 @@
 package memory
 
 import (
-	"errors"
-	"iot-demo/pkg/ingestion"
+	"iot-demo/pkg/metrics/ingestion"
 )
 
 // IngestionDecimal is non threadsafe repository implementation for ingestion package
@@ -21,7 +20,7 @@ func (i *IngestionDecimal) Query(deviceID int) ([]*ingestion.DecimalMetricValue,
 	if items, ok := i.metrics[deviceID]; ok {
 		return items, nil
 	}
-	return nil, errors.New("not found")
+	return nil, nil
 }
 
 func NewIngestion() *IngestionDecimal {

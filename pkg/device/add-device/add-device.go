@@ -2,7 +2,7 @@ package add_device
 
 import (
 	"iot-demo/pkg/auth"
-	"iot-demo/pkg/registry"
+	"iot-demo/pkg/device/registry"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type Tokenizer interface {
 
 type Service struct {
 	registerer Registerer
-	tokenizer Tokenizer
+	tokenizer  Tokenizer
 }
 
 func (s *Service) Register(serialNumber string, firmwareVersion string, registrationDate time.Time) (*registry.Device, auth.Token, error) {
