@@ -43,7 +43,7 @@ type Config struct {
 	Host                  string
 	DocumentationHost     string
 	DocumentationBasePath string
-	Port                  uint16
+	Port                  int
 	IsRelease             bool
 }
 

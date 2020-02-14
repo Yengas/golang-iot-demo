@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"iot-demo/pkg/config"
 	add_device "iot-demo/pkg/device/add-device"
 	"iot-demo/pkg/device/registry"
 	http_server "iot-demo/pkg/http"
@@ -33,13 +34,20 @@ func createGracefulShutdownChannel() chan os.Signal {
 }
 
 func main() {
+	isProduction := os.Getenv("GO_ENV") == "production"
+	cfgFile := "./resources/config.yaml"
+	cfg, err := config.Read(cfgFile)
+	if err != nil {
+		log.Fatalf("could not read `%s` config file: %v\n", cfgFile, err)
+	}
+
 	registryRepository := memory.NewRegistry()
 	registryService := registry.NewService(registryRepository)
 
 	ingestionRepository := memory.NewIngestion()
 	ingestionService := ingestion.NewDecimalService(ingestionRepository)
 
-	jwtConfig := jwt.Config{Secret: []byte("hello-world")}
+	jwtConfig := jwt.Config{Secret: []byte(cfg.Auth.Secret)}
 	jwtService := jwt.NewJWT(jwtConfig)
 
 	addDevice := add_device.NewService(registryService, jwt.DeviceJWT(jwtService))
@@ -66,11 +74,11 @@ func main() {
 	fmt.Printf("queried metrics: %v, err: %v\n", gotm, err)
 
 	serverConfig := http_server.Config{
-		Host:                  "localhost",
-		DocumentationHost:     "",
-		DocumentationBasePath: "/",
-		Port:                  8080,
-		IsRelease:             false,
+		Host:                  cfg.ServerConfig.Host,
+		DocumentationHost:     cfg.SwaggerConfig.DocumentationHost,
+		DocumentationBasePath: cfg.SwaggerConfig.DocumentationBasePath,
+		Port:                  cfg.ServerConfig.Port,
+		IsRelease:             isProduction,
 	}
 	handlers := http_server.NewHandlers(serverConfig, jwt.DeviceJWT(jwtService), addDevice, addMetrics, queryMetrics)
 	server := http_server.NewServer(serverConfig, handlers)
