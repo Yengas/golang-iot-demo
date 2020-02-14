@@ -1,4 +1,4 @@
-package tokenizer
+package jwt
 
 import (
 	"errors"

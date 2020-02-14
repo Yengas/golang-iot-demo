@@ -10,7 +10,7 @@ import (
 	"iot-demo/pkg/metrics/ingestion"
 	query_metrics "iot-demo/pkg/metrics/query-metrics"
 	"iot-demo/pkg/storage/memory"
-	"iot-demo/pkg/tokenizer"
+	"iot-demo/pkg/jwt"
 	"log"
 	"net/http"
 	"os"
@@ -39,10 +39,10 @@ func main() {
 	ingestionRepository := memory.NewIngestion()
 	ingestionService := ingestion.NewDecimalService(ingestionRepository)
 
-	jwtConfig := tokenizer.Config{Secret: []byte("hello-world")}
-	jwt := tokenizer.NewJWT(jwtConfig)
+	jwtConfig := jwt.Config{Secret: []byte("hello-world")}
+	jwtService := jwt.NewJWT(jwtConfig)
 
-	addDevice := add_device.NewService(registryService, tokenizer.DeviceJWT(jwt))
+	addDevice := add_device.NewService(registryService, jwt.DeviceJWT(jwtService))
 	addMetrics := add_metrics.NewService(ingestionService)
 	queryMetrics := query_metrics.NewService(ingestionService)
 
@@ -72,7 +72,7 @@ func main() {
 		Port:                  8080,
 		IsRelease:             false,
 	}
-	handlers := http_server.NewHandlers(serverConfig, tokenizer.DeviceJWT(jwt), addDevice, addMetrics, queryMetrics)
+	handlers := http_server.NewHandlers(serverConfig, jwt.DeviceJWT(jwtService), addDevice, addMetrics, queryMetrics)
 	server := http_server.NewServer(serverConfig, handlers)
 	gracefulShutdown := createGracefulShutdownChannel()
 	// start the server and graceful shutdown
