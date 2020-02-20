@@ -13,4 +13,5 @@ type Config struct {
 	Auth struct {
 		Secret string `yaml:"secret"`
 	} `yaml:"auth"`
+	IsRelease bool
 }

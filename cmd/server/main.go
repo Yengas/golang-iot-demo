@@ -2,16 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"iot-demo/pkg/config"
-	add_device "iot-demo/pkg/device/add-device"
-	"iot-demo/pkg/device/registry"
 	http_server "iot-demo/pkg/http"
-	add_metrics "iot-demo/pkg/metrics/add-metrics"
-	"iot-demo/pkg/metrics/ingestion"
-	query_metrics "iot-demo/pkg/metrics/query-metrics"
-	"iot-demo/pkg/storage/memory"
-	"iot-demo/pkg/jwt"
 	"log"
 	"net/http"
 	"os"
@@ -34,54 +25,11 @@ func createGracefulShutdownChannel() chan os.Signal {
 }
 
 func main() {
-	isProduction := os.Getenv("GO_ENV") == "production"
 	cfgFile := "./resources/config.yaml"
-	cfg, err := config.Read(cfgFile)
+	server, err := InitializeServer(cfgFile)
 	if err != nil {
 		log.Fatalf("could not read `%s` config file: %v\n", cfgFile, err)
 	}
-
-	registryRepository := memory.NewRegistry()
-	registryService := registry.NewService(registryRepository)
-
-	ingestionRepository := memory.NewIngestion()
-	ingestionService := ingestion.NewDecimalService(ingestionRepository)
-
-	jwtConfig := jwt.Config{Secret: []byte(cfg.Auth.Secret)}
-	jwtService := jwt.NewJWT(jwtConfig)
-
-	addDevice := add_device.NewService(registryService, jwt.DeviceJWT(jwtService))
-	addMetrics := add_metrics.NewService(ingestionService)
-	queryMetrics := query_metrics.NewService(ingestionService)
-
-	device, token, err := addDevice.Register("asd", "aasd", time.Now())
-	fmt.Printf("device: %v, token: %v, err: %v\n", device, token, err)
-
-	got, ok := registryRepository.Get(device.ID)
-	fmt.Printf("got device: %v, ok: %v\n", got, ok)
-
-	metrics := []*ingestion.DecimalMetricValue{
-		{0, ingestion.Time(time.Now())},
-		{1, ingestion.Time(time.Now())},
-		{1, ingestion.Time(time.Now())},
-		{1, ingestion.Time(time.Now())},
-	}
-
-	err = addMetrics.Add(device.ID, metrics)
-	fmt.Printf("insert err: %v\n", err)
-
-	gotm, err := queryMetrics.Query(device.ID)
-	fmt.Printf("queried metrics: %v, err: %v\n", gotm, err)
-
-	serverConfig := http_server.Config{
-		Host:                  cfg.ServerConfig.Host,
-		DocumentationHost:     cfg.SwaggerConfig.DocumentationHost,
-		DocumentationBasePath: cfg.SwaggerConfig.DocumentationBasePath,
-		Port:                  cfg.ServerConfig.Port,
-		IsRelease:             isProduction,
-	}
-	handlers := http_server.NewHandlers(serverConfig, jwt.DeviceJWT(jwtService), addDevice, addMetrics, queryMetrics)
-	server := http_server.NewServer(serverConfig, handlers)
 	gracefulShutdown := createGracefulShutdownChannel()
 	// start the server and graceful shutdown
 	go startServer(server)

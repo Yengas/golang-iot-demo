@@ -3,7 +3,7 @@ server:
   host: '0.0.0.0'
   port: 8080
 swagger:
-  documentation_host: 'localhost'
+  documentation_host: ''
   documentation_base_path: '/'
 auth:
   secret: 'iot-demo-secret'
