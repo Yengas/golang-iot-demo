@@ -20,13 +20,13 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeServer(path string) (*http_server.HTTPServer, error) {
-	configConfig, err := config.Read(path)
+func InitializeServer(cs config.Selection) (*http_server.HTTPServer, error) {
+	static, err := config.ReadStatic(cs)
 	if err != nil {
 		return nil, err
 	}
-	http_serverConfig := NewHTTPServerConfig(configConfig)
-	jwtConfig := NewJWTConfig(configConfig)
+	http_serverConfig := NewHTTPServerConfig(static)
+	jwtConfig := NewJWTConfig(static)
 	authJWT := jwt.NewJWT(jwtConfig)
 	deviceJWT := NewDeviceJWT(authJWT)
 	memoryRegistry := memory.NewRegistry()
@@ -34,7 +34,11 @@ func InitializeServer(path string) (*http_server.HTTPServer, error) {
 	add_deviceService := add_device.NewService(service, deviceJWT)
 	ingestionDecimal := memory.NewIngestion()
 	decimalService := ingestion.NewDecimalService(ingestionDecimal)
-	add_metricsService := add_metrics.NewService(decimalService)
+	dynamicGetter, err := config.NewDynamicGetter(cs)
+	if err != nil {
+		return nil, err
+	}
+	add_metricsService := add_metrics.NewService(decimalService, dynamicGetter)
 	query_metricsService := query_metrics.NewService(decimalService)
 	handler := http_server.NewHandlers(http_serverConfig, deviceJWT, add_deviceService, add_metricsService, query_metricsService)
 	httpServer := http_server.NewServer(http_serverConfig, handler)
@@ -43,7 +47,7 @@ func InitializeServer(path string) (*http_server.HTTPServer, error) {
 
 // wire.go:
 
-func NewJWTConfig(cfg *config.Config) jwt.Config {
+func NewJWTConfig(cfg config.Static) jwt.Config {
 	return jwt.Config{Secret: []byte(cfg.Auth.Secret)}
 }
 
@@ -51,18 +55,18 @@ func NewDeviceJWT(authJWT jwt.AuthJWT) jwt.DeviceJWT {
 	return jwt.DeviceJWT(authJWT)
 }
 
-func NewHTTPServerConfig(cfg *config.Config) http_server.Config {
+func NewHTTPServerConfig(cfg config.Static) http_server.Config {
 	return http_server.Config{
-		Host:                  cfg.ServerConfig.Host,
-		DocumentationHost:     cfg.SwaggerConfig.DocumentationHost,
-		DocumentationBasePath: cfg.SwaggerConfig.DocumentationBasePath,
-		Port:                  cfg.ServerConfig.Port,
+		Host:                  cfg.Server.Host,
+		DocumentationHost:     cfg.Swagger.DocumentationHost,
+		DocumentationBasePath: cfg.Swagger.DocumentationBasePath,
+		Port:                  cfg.Server.Port,
 		IsRelease:             cfg.IsRelease,
 	}
 }
 
 var (
-	configSet = wire.NewSet(config.Read)
+	configSet = wire.NewSet(config.ReadStatic, config.NewDynamicGetter, wire.Bind(new(add_metrics.ConfigGetter), new(*config.DynamicGetter)))
 	jwtSet    = wire.NewSet(
 		NewJWTConfig, jwt.NewJWT, NewDeviceJWT, wire.Bind(new(http_server.DeviceTokenParser), new(jwt.DeviceJWT)), wire.Bind(new(add_device.Tokenizer), new(jwt.DeviceJWT)),
 	)

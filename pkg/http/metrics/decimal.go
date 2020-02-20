@@ -31,13 +31,13 @@ func decimalPostHandler(service *add_metrics.Service) gin.HandlerFunc {
 			return
 		}
 
-		err := service.Add(authInfo.DeviceID, requestDTO)
+		message, err := service.Add(authInfo.DeviceID, requestDTO)
 		if err != nil {
 			c.String(500, fmt.Errorf("insert error: %v", err).Error())
 			return
 		}
 
-		c.JSON(200, "inserted")
+		c.JSON(200, message)
 		return
 	}
 }

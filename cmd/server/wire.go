@@ -15,7 +15,7 @@ import (
 	"iot-demo/pkg/storage/memory"
 )
 
-func NewJWTConfig(cfg *config.Config) jwt.Config {
+func NewJWTConfig(cfg config.Static) jwt.Config {
 	return jwt.Config{Secret: []byte(cfg.Auth.Secret)}
 }
 
@@ -23,18 +23,22 @@ func NewDeviceJWT(authJWT jwt.AuthJWT) jwt.DeviceJWT {
 	return jwt.DeviceJWT(authJWT)
 }
 
-func NewHTTPServerConfig(cfg *config.Config) http_server.Config {
+func NewHTTPServerConfig(cfg config.Static) http_server.Config {
 	return http_server.Config{
-		Host:                  cfg.ServerConfig.Host,
-		DocumentationHost:     cfg.SwaggerConfig.DocumentationHost,
-		DocumentationBasePath: cfg.SwaggerConfig.DocumentationBasePath,
-		Port:                  cfg.ServerConfig.Port,
+		Host:                  cfg.Server.Host,
+		DocumentationHost:     cfg.Swagger.DocumentationHost,
+		DocumentationBasePath: cfg.Swagger.DocumentationBasePath,
+		Port:                  cfg.Server.Port,
 		IsRelease:             cfg.IsRelease,
 	}
 }
 
 var (
-	configSet = wire.NewSet(config.Read)
+	configSet = wire.NewSet(
+		config.ReadStatic,
+		config.NewDynamicGetter,
+		wire.Bind(new(add_metrics.ConfigGetter), new(*config.DynamicGetter)),
+	)
 	jwtSet = wire.NewSet(
 		NewJWTConfig,
 		jwt.NewJWT,
@@ -67,7 +71,7 @@ var (
 	queryMetricsSet = wire.NewSet(query_metrics.NewService)
 )
 
-func InitializeServer(path string) (*http_server.HTTPServer, error) {
+func InitializeServer(cs config.Selection) (*http_server.HTTPServer, error) {
 	wire.Build(
 		configSet,
 		jwtSet,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"iot-demo/pkg/config"
 	http_server "iot-demo/pkg/http"
 	"log"
 	"net/http"
@@ -24,11 +25,23 @@ func createGracefulShutdownChannel() chan os.Signal {
 	return gracefulShutdown
 }
 
+func getConfigProfile() string {
+	env := os.Getenv("PROFILE")
+	if env != "" {
+		return env
+	}
+	return "dev"
+}
+
 func main() {
-	cfgFile := "./resources/config.yaml"
-	server, err := InitializeServer(cfgFile)
+	cfgSelection := config.Selection{
+		StaticConfigurationFilePath:  "./resources/config.yaml",
+		DynamicConfigurationFilePath: "./resources/config_dynamic.yaml",
+		Profile:                      getConfigProfile(),
+	}
+	server, err := InitializeServer(cfgSelection)
 	if err != nil {
-		log.Fatalf("could not read `%s` config file: %v\n", cfgFile, err)
+		log.Fatalf("could not read `%v` config file: %v\n", cfgSelection, err)
 	}
 	gracefulShutdown := createGracefulShutdownChannel()
 	// start the server and graceful shutdown
