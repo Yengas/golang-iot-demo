@@ -25,6 +25,10 @@ definitions:
       value:
         type: number
     type: object
+  ingestion.DecimalMetricValueList:
+    items:
+      $ref: '#/definitions/ingestion.DecimalMetricValue'
+    type: array
   registry.Device:
     properties:
       firmware_version:
@@ -137,9 +141,7 @@ paths:
         name: metrics
         required: true
         schema:
-          items:
-            $ref: '#/definitions/ingestion.DecimalMetricValue'
-          type: array
+          $ref: '#/definitions/ingestion.DecimalMetricValueList'
       produces:
       - application/json
       responses:

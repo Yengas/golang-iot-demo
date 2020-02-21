@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"iot-demo/pkg/config"
-	http_server "iot-demo/pkg/http"
+	"iot-demo/adapters/config"
+	http_server "iot-demo/adapters/http"
 	"log"
 	"net/http"
 	"os"

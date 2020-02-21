@@ -12,7 +12,7 @@ import (
 // @Tags metric
 // @Accept json
 // @Produce json
-// @Param metrics body []ingestion.DecimalMetricValue true "metrics to insert"
+// @Param metrics body ingestion.DecimalMetricValueList true "metrics to insert"
 // @Success 201 {string} string "inserted the temperature metrics"
 // @Failure 400 {string} string "invalid request parameters"
 // @Failure 401 {string} string "no device token supplied"

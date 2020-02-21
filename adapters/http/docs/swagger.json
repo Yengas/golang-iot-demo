@@ -156,10 +156,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/ingestion.DecimalMetricValue"
-                            }
+                            "$ref": "#/definitions/ingestion.DecimalMetricValueList"
                         }
                     }
                 ],
@@ -229,6 +226,12 @@
                 "value": {
                     "type": "number"
                 }
+            }
+        },
+        "ingestion.DecimalMetricValueList": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/ingestion.DecimalMetricValue"
             }
         },
         "registry.Device": {

@@ -7,15 +7,15 @@ package main
 
 import (
 	"github.com/google/wire"
-	"iot-demo/pkg/config"
+	"iot-demo/adapters/config"
+	"iot-demo/adapters/http"
+	"iot-demo/adapters/jwt"
+	"iot-demo/adapters/storage/memory"
 	"iot-demo/pkg/device/add-device"
 	"iot-demo/pkg/device/registry"
-	"iot-demo/pkg/http"
-	"iot-demo/pkg/jwt"
 	"iot-demo/pkg/metrics/add-metrics"
 	"iot-demo/pkg/metrics/ingestion"
 	"iot-demo/pkg/metrics/query-metrics"
-	"iot-demo/pkg/storage/memory"
 )
 
 // Injectors from wire.go:

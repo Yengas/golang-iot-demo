@@ -1,5 +1,7 @@
 package ingestion
 
+type DecimalMetricValueList []*DecimalMetricValue
+
 type DecimalMetricValue struct {
 	Value float64 `json:"value"`
 	// Epoch timestamp in seconds
