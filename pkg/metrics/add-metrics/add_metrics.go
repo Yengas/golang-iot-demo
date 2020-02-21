@@ -20,7 +20,7 @@ type Service struct {
 func (s *Service) Add(deviceID int, metricsToInsert []*ingestion.DecimalMetricValue) (string, error) {
 	err := s.inserter.Insert(deviceID, metricsToInsert)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return s.getter.GetMessage(), nil
