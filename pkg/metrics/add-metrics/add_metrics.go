@@ -1,7 +1,14 @@
 package add_metrics
 
 import (
+	"iot-demo/pkg/metrics/alert"
 	"iot-demo/pkg/metrics/ingestion"
+)
+
+type ResponseToken string
+const (
+	Alert ResponseToken = "ALERT"
+	Ok ResponseToken = "OK"
 )
 
 type Inserter interface {
@@ -9,23 +16,33 @@ type Inserter interface {
 }
 
 type ConfigGetter interface {
-	GetMessage() string
+	GetThreshold() alert.Threshold
 }
 
 type Service struct {
 	inserter Inserter
-	getter   ConfigGetter
+	config   ConfigGetter
 }
 
-func (s *Service) Add(deviceID int, metricsToInsert []*ingestion.DecimalMetricValue) (string, error) {
+func (s *Service) Add(deviceID int, metricsToInsert []*ingestion.DecimalMetricValue) (ResponseToken, error) {
 	err := s.inserter.Insert(deviceID, metricsToInsert)
 	if err != nil {
 		return "", err
 	}
 
-	return s.getter.GetMessage(), nil
+	threshold := s.config.GetThreshold()
+	return getMessage(threshold, metricsToInsert), nil
 }
 
-func NewService(inserter Inserter, getter ConfigGetter) *Service {
-	return &Service{inserter: inserter, getter: getter}
+func getMessage(threshold alert.Threshold, metrics []*ingestion.DecimalMetricValue) ResponseToken {
+	for _, metric := range metrics {
+		if threshold.DoesMatch(metric.Value) {
+			return Alert
+		}
+	}
+	return Ok
+}
+
+func NewService(inserter Inserter, config ConfigGetter) *Service {
+	return &Service{inserter: inserter, config: config}
 }

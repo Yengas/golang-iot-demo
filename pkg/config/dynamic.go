@@ -5,6 +5,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/prometheus/common/log"
 	"github.com/spf13/viper"
+	"iot-demo/pkg/metrics/alert"
 	"sync"
 )
 
@@ -15,8 +16,8 @@ type DynamicGetter struct {
 }
 
 
-func (dg *DynamicGetter) GetMessage() string {
-	return dg.getCurrent().Test
+func (dg *DynamicGetter) GetThreshold() alert.Threshold {
+	return dg.getCurrent().Threshold
 }
 
 func NewDynamicGetter(s Selection) (*DynamicGetter, error) {

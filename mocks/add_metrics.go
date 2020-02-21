@@ -6,6 +6,7 @@ package mocks
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	alert "iot-demo/pkg/metrics/alert"
 	ingestion "iot-demo/pkg/metrics/ingestion"
 	reflect "reflect"
 )
@@ -70,16 +71,16 @@ func (m *MockConfigGetter) EXPECT() *MockConfigGetterMockRecorder {
 	return m.recorder
 }
 
-// GetMessage mocks base method
-func (m *MockConfigGetter) GetMessage() string {
+// GetThreshold mocks base method
+func (m *MockConfigGetter) GetThreshold() alert.Threshold {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMessage")
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "GetThreshold")
+	ret0, _ := ret[0].(alert.Threshold)
 	return ret0
 }
 
-// GetMessage indicates an expected call of GetMessage
-func (mr *MockConfigGetterMockRecorder) GetMessage() *gomock.Call {
+// GetThreshold indicates an expected call of GetThreshold
+func (mr *MockConfigGetterMockRecorder) GetThreshold() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessage", reflect.TypeOf((*MockConfigGetter)(nil).GetMessage))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThreshold", reflect.TypeOf((*MockConfigGetter)(nil).GetThreshold))
 }

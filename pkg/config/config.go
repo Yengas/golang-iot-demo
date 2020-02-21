@@ -23,5 +23,8 @@ type Static struct {
 }
 
 type Dynamic struct {
-	Test string
+	Threshold struct {
+		Min float64
+		Max float64
+	}
 }

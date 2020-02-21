@@ -1,1 +1,3 @@
-test: 'this is dynamic'
+threshold:
+  Min: 74
+  Max: 100
