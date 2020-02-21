@@ -18,7 +18,7 @@ Will keep track of device metrics in a factory. Devices will periodically send m
 
 
 ## Run the Server
-Just run `go run iot-demo/cmd/server` to start the project. By default it listens to 8080 port. You can override it by setting the PORT env variable.
+Just run `go mod download` and then `go run iot-demo/cmd/server` to start the project. By default it listens to 8080 port. You can override it by setting the PORT env variable.
 
 ## Dependencies
 To install dependencies used by the project, run `go mod download`. There are also some global dependencies that you may need to install to make `go generate ./...` run. Those are:
